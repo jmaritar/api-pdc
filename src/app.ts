@@ -8,6 +8,7 @@ import prisma from "./client/prisma";
 import apiRouter from "./router/router";
 import { envConfig } from "./env";
 import bcrypt from 'bcrypt';
+import { seedDatabase } from "./seeds";
 
 const app = new Hono();
 
@@ -23,19 +24,10 @@ app.get("/", (c) => {
     });
 });
 
-app.get("/seed", (async (c: Context) => {
-
-    const hashedPassword = await bcrypt.hash("zakir", 10);
-    
-    await prisma.user.create({
-        data: {
-            email: "hi@zakir.dev",
-            name: "Muh Zakir Ramadhan",
-            password: hashedPassword
-        }
-    });
-    return c.json({ message: "Data Seed" }, 201);
-}));
+app.get("/seed", async (c: Context) => {
+    await seedDatabase();
+    return c.json({ message: "Database seeded successfully" }, 201);
+});
 
 app.mount("/api", apiRouter.fetch);
 app.notFound((c) => c.json({ message: "Not Found" }, 404));

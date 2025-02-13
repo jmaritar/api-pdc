@@ -13,9 +13,120 @@ datasource db {
   url      = env("DB_URL")
 }
 
+// Tabla de usuarios
 model User {
-    id Int @id @default(autoincrement())
-    email String  @unique
-    password String
-    name  String?
+  id_user     String @id @default(uuid())
+  email       String @unique
+  password    String
+  name        String?
+  role        UserRole
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  sessions    Session[]
+  logs        Log[]
+}
+
+enum UserRole {
+  ADMIN
+  HR
+  EMPLOYEE
+}
+
+// Tabla para gestión de empresas
+model Company {
+  id_company      String @id @default(uuid())
+  name            String
+  trade_name      String
+  nit             String @unique
+  phone           String?
+  email           String?
+  country_id      String
+  department_id   String
+  municipality_id String
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  country         Country      @relation(fields: [country_id], references: [id_country])
+  department      Department   @relation(fields: [department_id], references: [id_department])
+  municipality    Municipality @relation(fields: [municipality_id], references: [id_municipality])
+  employees       Employee[]
+
+  logs            Log[] @relation("CompanyLogs")
+}
+
+// Tabla de colaboradores
+model Employee {
+  id_employee    String @id @default(uuid())
+  name           String
+  age            Int
+  phone          String?
+  email          String?
+  company_id     String?
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  company        Company? @relation(fields: [company_id], references: [id_company])
+
+  logs           Log[] @relation("EmployeeLogs")
+}
+
+// Geografía
+model Country {
+  id_country     String @id @default(uuid())
+  name           String @unique
+  companies      Company[]
+  departments    Department[]
+}
+
+model Department {
+  id_department  String @id @default(uuid())
+  name           String
+  country_id     String
+  country        Country  @relation(fields: [country_id], references: [id_country])
+
+  companies      Company[]
+  municipalities Municipality[]
+}
+
+model Municipality {
+  id_municipality String @id @default(uuid())
+  name            String
+  department_id   String
+  department      Department @relation(fields: [department_id], references: [id_department])
+
+  companies       Company[]
+}
+
+// Autenticación y sesiones
+model Session {
+  id_session    String @id @default(uuid())
+  user_id       String
+  token         String @unique
+  refresh_token String @unique
+  expires_at    DateTime
+  created_at    DateTime @default(now())
+
+  user          User @relation(fields: [user_id], references: [id_user])
+}
+
+// Tabla de auditoría
+model Log {
+  id_log      String    @id @default(uuid())
+  user_id     String?   // Usuario que realizó la acción
+  table_name  String    // Nombre de la tabla afectada
+  action      LogAction // Tipo de acción realizada
+  record_id   String    // ID del registro afectado
+  created_at  DateTime  @default(now())
+
+  user        User? @relation(fields: [user_id], references: [id_user])
+
+  companies   Company[] @relation("CompanyLogs")
+  employees   Employee[] @relation("EmployeeLogs")
+}
+
+enum LogAction {
+  CREATE
+  UPDATE
+  DELETE
 }
