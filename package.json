@@ -1,0 +1,42 @@
+{
+  "name": "api-pdc",
+  "module": "src/app.ts",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch ./src/app.ts",
+    "clean": "rm -rf ./dist",
+    "build": "tsup",
+    "start": "node ./dist/app.js",
+    "db:dev": "tsx ./cli/db-dev-migrate.ts",
+    "db:create": "prisma migrate dev --create-only",
+    "db:generate": "prisma generate",
+    "db:deploy": "prisma migrate deploy",
+    "db:status": "prisma migrate status",
+    "test": "vitest",
+    "test:coverage": "vitest --coverage",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "pnpm lint --fix",
+    "format": "prettier --write '**/*.ts{,x}'",
+    "check:types": "tsc --noEmit",
+    "check:spell": "git diff --name-only | cspell --no-summary --no-progress --no-must-find-files --file-list stdin",
+    "check:all": "concurrently \"pnpm lint\" \"pnpm check:types\" \"pnpm check:spell\"",
+    "pre-commit": "concurrently \"lint-staged --allow-empty\" \"pnpm check:types\" \"pnpm check:spell\""
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "prisma": "^5.16.2",
+    "tsx": "^4.19.2"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.8",
+    "@prisma/client": "^5.16.2",
+    "bcrypt": "^5.1.1",
+    "dotenv": "^16.4.7",
+    "hono": "^4.4.13",
+    "tsup": "^8.3.6",
+    "zod": "^3.23.8"
+  }
+}
