@@ -1,0 +1,21 @@
+{
+  "version": "0.2",
+  "language": "en,es",
+  "import": ["./cspell-ext.json"],
+  "words": [
+    "commitlint",
+    "datetimepicker",
+    "degit",
+    "immer",
+    "lucide",
+    "pnpm",
+    "Pressable",
+    "shadcn",
+    "swipeable",
+    "tanstack",
+    "Todos",
+    "USERID",
+    "zustand"
+  ],
+  "ignorePaths": ["node_modules/", "build/", ".husky", "pnpm-lock.yaml", "package.json"]
+}

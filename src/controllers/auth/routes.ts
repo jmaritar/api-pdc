@@ -4,8 +4,8 @@ import { loginRoute, loginRouteHandler } from './login';
 
 const authRoutes = new OpenAPIHono<HonoEnv>().openapi(
   loginRoute,
-//   @ts-ignore
+  // @ts-expect-error
   loginRouteHandler
-)
+);
 
 export default authRoutes;

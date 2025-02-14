@@ -1,13 +1,11 @@
-import { RouteConfig, RouteHandler } from "@hono/zod-openapi";
-import "hono";
+import { type RouteConfig, type RouteHandler } from '@hono/zod-openapi';
+import 'hono';
 
-export interface HonoEnv {
-    
-}
+export type HonoEnv = object;
 
-declare module "hono" {
+declare module 'hono' {
   interface HonoRequest {
-    parsedJwt?: any;
+    parsedJwt?: unknown;
   }
 }
 

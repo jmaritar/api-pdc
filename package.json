@@ -33,8 +33,24 @@
     "check:all": "concurrently \"pnpm lint\" \"pnpm check:types\" \"pnpm check:spell\"",
     "pre-commit": "concurrently \"lint-staged --allow-empty\" \"pnpm check:types\" \"pnpm check:spell\""
   },
+  "lint-staged": {
+    "**/*.{ts}": [
+      "prettier --write",
+      "eslint --fix"
+    ]
+  },
   "devDependencies": {
+    "@commitlint/cli": "^19.7.1",
+    "@commitlint/config-conventional": "^19.7.1",
+    "@cspell/dict-es-es": "^3.0.3",
     "@types/bcrypt": "^5.0.2",
+    "@typescript-eslint/eslint-plugin": "^8.24.0",
+    "@typescript-eslint/parser": "^8.24.0",
+    "cspell": "^8.17.3",
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^10.0.1",
+    "lint-staged": "^15.4.3",
+    "prettier": "^3.5.1",
     "prisma": "^5.16.2",
     "tsx": "^4.19.2"
   },
@@ -51,6 +67,7 @@
     "dayjs": "^1.11.13",
     "dotenv": "^16.4.7",
     "hono": "^4.4.13",
+    "pino": "^9.6.0",
     "tsup": "^8.3.6",
     "zod": "^3.23.8"
   }
