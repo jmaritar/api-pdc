@@ -1,22 +1,28 @@
 import { Hono } from "hono";
 import { UsersController } from "../controllers/users";
 import { AuthController } from "../controllers/auth";
-import { jwt } from "hono/jwt";
+import { jwtMiddleware, requireRole } from "../middleware/authorize";
 
 const app = new Hono();
-const userController = new UsersController;
-const authController = new AuthController;
+const userController = new UsersController();
+const authController = new AuthController();
 
+// Endpoints públicos
 app.post("/login", authController.login);
+app.post("/refresh-token", authController.refreshToken);
 
-app.use(
-    '/users/*',
-    // jwt({
-    //   secret: Bun.env.JWT_SECRET as string,
-    // })
-);
+// Middleware para rutas protegidas (valida el JWT y agrega parsedJwt)
+app.use("/users/*", jwtMiddleware);
 
+// Rutas de usuarios
 app.get("/users", userController.getAll);
-app.post("/users", userController.createUsers);
+app.get("/users/:id", userController.getById);
+
+// Para crear/actualizar usuarios se exige rol ADMIN o HR
+app.post("/users", requireRole(["ADMIN", "HR"]), userController.createUsers);
+app.put("/users/:id", requireRole(["ADMIN", "HR"]), userController.updateUser);
+
+// Para eliminar, solo ADMIN
+app.delete("/users/:id", requireRole(["ADMIN"]), userController.deleteUser);
 
 export default app;
