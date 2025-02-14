@@ -26,12 +26,12 @@
     "test": "vitest",
     "test:coverage": "vitest --coverage",
     "lint": "eslint . --ext .ts",
-    "lint:fix": "pnpm lint --fix",
+    "lint:fix": "npm run lint --fix",
     "format": "prettier --write '**/*.ts{,x}'",
     "check:types": "tsc --noEmit",
     "check:spell": "git diff --name-only | cspell --no-summary --no-progress --no-must-find-files --file-list stdin",
-    "check:all": "concurrently \"pnpm lint\" \"pnpm check:types\" \"pnpm check:spell\"",
-    "pre-commit": "concurrently \"lint-staged --allow-empty\" \"pnpm check:types\" \"pnpm check:spell\""
+    "check:all": "concurrently \"npm run lint\" \"npm run check:types\" \"npm run check:spell\"",
+    "pre-commit": "concurrently \"lint-staged --allow-empty\" \"npm run check:types\" \"npm run check:spell\""
   },
   "lint-staged": {
     "**/*.{ts}": [
@@ -47,6 +47,7 @@
     "@types/bcrypt": "^5.0.2",
     "@typescript-eslint/eslint-plugin": "^8.24.0",
     "@typescript-eslint/parser": "^8.24.0",
+    "concurrently": "^9.1.2",
     "cspell": "^8.17.3",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^10.0.1",
