@@ -14,9 +14,26 @@ import { routes } from "./controllers/routes";
 
 const app = new OpenAPIHono<HonoEnv>();
 
+const allowedOrigins = [
+  'https://angular-pdc.pages.dev/',
+  'http://localhost:8081',
+  'http://127.0.0.1:8787',
+];
+
 app.use("*", etag(), logger());
 app.use("*", prettyJSON());
-app.use("*", cors());
+/* CORS */
+app.use(
+  '*',
+  cors({
+    origin: allowedOrigins,
+    allowHeaders: ['Content-Type', 'Authorization'],
+    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    exposeHeaders: ['Content-Length', 'X-Kuma-Revision'],
+    maxAge: 600,
+    credentials: true,
+  })
+);
 
 /* API Docs */
 app.doc('/openapi.json',{
@@ -53,8 +70,9 @@ app.get("/seed", async (c) => {
     return c.json({ message: "Database seeded successfully" }, 201);
 });
 
-routes.forEach((route) => {
-  app.mount("/api", route.fetch);
+/* Routes */
+routes.forEach(route => {
+  app.route('/api/v1', route);
 });
 
 app.notFound((c) => c.json({ message: "Not Found" }, 404));
