@@ -1,5 +1,6 @@
-import { UserRoleType } from '@/db/types';
 import { z } from '@hono/zod-openapi';
+
+import { UserRoleType } from '@/db/types';
 
 export const userSchemaObject = {
   id_user: z.string().uuid(),

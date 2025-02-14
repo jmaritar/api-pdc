@@ -1,16 +1,18 @@
 import { serve } from '@hono/node-server';
+import { swaggerUI } from '@hono/swagger-ui';
+import { OpenAPIHono } from '@hono/zod-openapi';
+import { cors } from 'hono/cors';
 import { etag } from 'hono/etag';
 import { logger } from 'hono/logger';
 import { prettyJSON } from 'hono/pretty-json';
-import { cors } from 'hono/cors';
-import { envConfig } from './env';
+
+import { apiReference } from '@scalar/hono-api-reference';
+
 import { version } from '../package.json';
+import { routes } from './controllers/routes';
+import { envConfig } from './env';
 import { seedDatabase } from './seeds';
 import { type HonoEnv } from './types/hono';
-import { OpenAPIHono } from '@hono/zod-openapi';
-import { swaggerUI } from '@hono/swagger-ui';
-import { apiReference } from '@scalar/hono-api-reference';
-import { routes } from './controllers/routes';
 
 const app = new OpenAPIHono<HonoEnv>();
 

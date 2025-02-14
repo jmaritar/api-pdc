@@ -1,8 +1,9 @@
-import { pinoLogger } from '@/utils/logger';
 import { type Context, type Next } from 'hono';
 import { bearerAuth } from 'hono/bearer-auth';
 import { decode } from 'hono/jwt';
+
 import { getCurrentLocalDateISO } from '@/utils/date';
+import { pinoLogger } from '@/utils/logger';
 
 export const authenticate = async (c: Context, next: Next) => {
   console.info('Authenticating user...');

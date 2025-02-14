@@ -1,4 +1,5 @@
 import { type RouteConfig, type RouteHandler } from '@hono/zod-openapi';
+
 import 'hono';
 
 export type HonoEnv = object;

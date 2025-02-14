@@ -1,11 +1,13 @@
+import { createRoute, z } from '@hono/zod-openapi';
+import { sign } from 'hono/jwt';
+
+import { envConfig } from '@/env';
+import { compare } from 'bcrypt';
+
 import prisma from '@/client/prisma';
 import { getUserData } from '@/data/user/get-user';
 import { userSchema } from '@/data/user/schema';
-import { envConfig } from '@/env';
 import { type AppRouteHandler } from '@/types/hono';
-import { createRoute, z } from '@hono/zod-openapi';
-import { compare } from 'bcrypt';
-import { sign } from 'hono/jwt';
 
 export const loginSchema = {
   body: userSchema.pick({

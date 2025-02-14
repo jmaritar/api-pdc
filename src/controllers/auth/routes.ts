@@ -1,5 +1,7 @@
-import { type HonoEnv } from '@/types/hono';
 import { OpenAPIHono } from '@hono/zod-openapi';
+
+import { type HonoEnv } from '@/types/hono';
+
 import { loginRoute, loginRouteHandler } from './login';
 
 const authRoutes = new OpenAPIHono<HonoEnv>().openapi(
