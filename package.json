@@ -2,6 +2,8 @@
   "name": "api-pdc",
   "version": "1.0.0",
   "private": true,
+  "module": "src/app.ts",
+  "type": "module",
   "description": "Byte Recipes API",
   "author": "Mario Arita <marioarita502@gmail.com>",
   "license": "ISC",
