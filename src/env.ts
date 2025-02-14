@@ -15,9 +15,9 @@ const envSchema = z.object({
   DB_URL: z.string(),
   TEST_DB_URL: z.string(),
   JWT_SECRET: z.string(),
-  JWT_EXPIRE: z.string(),
+  JWT_EXPIRE: z.coerce.number(),
   JWT_REFRESH_SECRET: z.string(),
-  JWT_REFRESH_EXPIRE: z.string(),
+  JWT_REFRESH_EXPIRE: z.coerce.number(),
   JWT_ALGORITHM: z.enum(['HS256', 'HS384', 'HS512']).default('HS256'),
   BCRYPT_SALT: z.string(),
 });

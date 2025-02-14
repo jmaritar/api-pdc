@@ -1,44 +1,40 @@
 import { type Context, type Next } from 'hono';
-import { bearerAuth } from 'hono/bearer-auth';
 import { decode } from 'hono/jwt';
-
-import { getCurrentLocalDateISO } from '@/utils/date';
-import { pinoLogger } from '@/utils/logger';
 
 export const authenticate = async (c: Context, next: Next) => {
   console.info('Authenticating user...');
 
-  const bearer = bearerAuth({
-    verifyToken: async (token, c) => {
-      try {
-        const decodedToken = await decode(token);
-        const { exp } = decodedToken.payload;
+  const authHeader = c.req.header('Authorization');
 
-        console.info('Decoded token:', decodedToken.payload);
+  if (!authHeader) {
+    return c.json({ error: 'Authorization header missing' }, 401);
+  }
 
-        if (!exp) {
-          pinoLogger.error('Token does not have an expiration time');
-          return false;
-        }
+  const token = authHeader.split(' ')[1];
+  if (!token) {
+    return c.json({ error: 'Bearer token missing' }, 401);
+  }
 
-        const currentISODate = getCurrentLocalDateISO();
-        const tokenExpirationDate = new Date(exp * 1000).toISOString();
+  try {
+    const decodedToken = await decode(token);
+    const { exp, id } = decodedToken.payload;
 
-        if (currentISODate >= tokenExpirationDate) {
-          pinoLogger.error('Token has expired');
-          return false;
-        }
+    console.info('Decoded token:', decodedToken.payload);
 
-        pinoLogger.info('Token verified:', decodedToken.payload);
-        c.set('user', decodedToken.payload);
+    if (!exp || !id) {
+      return c.json({ error: 'Token is invalid' }, 401);
+    }
 
-        return true;
-      } catch (error) {
-        pinoLogger.error('Token verification failed:', error);
-        return false;
-      }
-    },
-  });
+    if (Date.now() >= exp * 1000) {
+      return c.json({ error: 'Token has expired' }, 401);
+    }
 
-  await bearer(c, next);
+    console.info('Token verified:', decodedToken.payload);
+    c.set('user', decodedToken.payload);
+
+    await next();
+  } catch (error) {
+    console.error('Token verification failed:', error);
+    return c.json({ error: 'Token verification failed' }, 401);
+  }
 };

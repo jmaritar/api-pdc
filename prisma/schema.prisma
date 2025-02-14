@@ -15,17 +15,20 @@ datasource db {
 
 // Tabla de usuarios
 model User {
-  id_user     String @id @default(uuid())
-  email       String @unique
-  password    String
-  name        String?
-  role        UserRole
-  is_active   Boolean @default(true)
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
+  id_user         String @id @default(uuid())
+  email           String @unique @db.VarChar(255)
+  password        String @db.VarChar(255)
+  name            String? @db.VarChar(100)
+  role            UserRole
 
-  sessions    Session[]
-  logs        Log[]
+  is_active       Boolean @default(true)
+  created_at      DateTime @default(now())
+  updated_at      DateTime? @updatedAt
+  created_by      String? @db.VarChar(36)
+  updated_by      String? @db.VarChar(36)
+
+  sessions        Session[]
+  logs            Log[]
 }
 
 enum UserRole {
@@ -37,35 +40,60 @@ enum UserRole {
 // Tabla para gestión de empresas
 model Company {
   id_company      String @id @default(uuid())
-  name            String
-  trade_name      String
-  nit             String @unique
-  phone           String?
-  email           String?
-  country_id      String
-  department_id   String
-  municipality_id String
+  name            String @db.VarChar(255)
+  trade_name      String @db.VarChar(255)
+  nit             String @unique @db.VarChar(50)
+  phone           String? @db.VarChar(20)
+  email           String? @db.VarChar(255)
+  website         String? @db.VarChar(255)
+  industry        String? @db.VarChar(100)
+  size            Int?
+  founded_year    Int?
+  company_type_id String? @db.VarChar(36)
+  country_id      String @db.VarChar(36)
+  department_id   String @db.VarChar(36)
+  municipality_id String @db.VarChar(36)
+
+  is_active       Boolean @default(true)
   created_at      DateTime @default(now())
-  updated_at      DateTime @updatedAt
+  updated_at      DateTime? @updatedAt
+  created_by      String? @db.VarChar(36)
+  updated_by      String? @db.VarChar(36)
 
   country         Country      @relation(fields: [country_id], references: [id_country])
   department      Department   @relation(fields: [department_id], references: [id_department])
   municipality    Municipality @relation(fields: [municipality_id], references: [id_municipality])
+  company_type    CompanyType? @relation(fields: [company_type_id], references: [id_company_type])
   employees       Employee[]
 
   logs            Log[] @relation("CompanyLogs")
 }
 
+// Tipos de empresas
+model CompanyType {
+  id_company_type String @id @default(uuid())
+  name            String @unique @db.VarChar(100)
+  companies       Company[]
+}
+
 // Tabla de colaboradores
 model Employee {
   id_employee    String @id @default(uuid())
-  name           String
+  name           String @db.VarChar(255)
   age            Int
-  phone          String?
-  email          String?
-  company_id     String?
+  phone          String? @db.VarChar(20)
+  email          String? @db.VarChar(255)
+  address        String? @db.VarChar(255)
+  start_date     DateTime?
+  end_date       DateTime?
+  position       String? @db.VarChar(100)
+  company_id     String? @db.VarChar(36)
+
+  is_active      Boolean @default(true)
   created_at     DateTime @default(now())
-  updated_at     DateTime @updatedAt
+  updated_at     DateTime? @updatedAt
+  created_by     String? @db.VarChar(36)
+  updated_by     String? @db.VarChar(36)
 
   company        Company? @relation(fields: [company_id], references: [id_company])
 
@@ -75,15 +103,37 @@ model Employee {
 // Geografía
 model Country {
   id_country     String @id @default(uuid())
-  name           String @unique
+  name           String @unique @db.VarChar(100)
+  code           String? @unique @db.VarChar(10)
+  phone_code     String? @db.VarChar(10)
+  currency_code  String? @db.VarChar(10)
+  currency_name  String? @db.VarChar(50)
+  currency_symbol String? @db.VarChar(10)
+  flag           String? @db.VarChar(255)
+  language       String? @db.VarChar(50)
+  capital        String? @db.VarChar(100)
+
+  is_active      Boolean @default(true)
+  created_at     DateTime @default(now())
+  updated_at     DateTime? @updatedAt
+  created_by     String? @db.VarChar(36)
+  updated_by     String? @db.VarChar(36)
+
   companies      Company[]
   departments    Department[]
 }
 
 model Department {
   id_department  String @id @default(uuid())
-  name           String
-  country_id     String
+  name           String @db.VarChar(100)
+  country_id     String @db.VarChar(36)
+
+  is_active      Boolean @default(true)
+  created_at     DateTime @default(now())
+  updated_at     DateTime? @updatedAt
+  created_by     String? @db.VarChar(36)
+  updated_by     String? @db.VarChar(36)
+
   country        Country  @relation(fields: [country_id], references: [id_country])
 
   companies      Company[]
@@ -92,8 +142,15 @@ model Department {
 
 model Municipality {
   id_municipality String @id @default(uuid())
-  name            String
-  department_id   String
+  name            String @db.VarChar(100)
+  department_id   String @db.VarChar(36)
+
+  is_active       Boolean @default(true)
+  created_at      DateTime @default(now())
+  updated_at      DateTime? @updatedAt
+  created_by      String? @db.VarChar(36)
+  updated_by      String? @db.VarChar(36)
+
   department      Department @relation(fields: [department_id], references: [id_department])
 
   companies       Company[]
@@ -102,7 +159,7 @@ model Municipality {
 // Autenticación y sesiones
 model Session {
   id_session    String @id @default(uuid())
-  user_id       String
+  user_id       String @db.VarChar(36)
   token         String @unique @db.VarChar(255)
   refresh_token String @unique @db.VarChar(255)
   expires_at    DateTime
@@ -113,21 +170,27 @@ model Session {
 
 // Tabla de auditoría
 model Log {
-  id_log      String    @id @default(uuid())
-  user_id     String?   // Usuario que realizó la acción
-  table_name  String    // Nombre de la tabla afectada
-  action      LogAction // Tipo de acción realizada
-  record_id   String    // ID del registro afectado
-  created_at  DateTime  @default(now())
+  id_log       String    @id @default(uuid())
+  user_id      String?   @db.VarChar(36)
+  table_name   String    @db.VarChar(100)
+  action       LogAction
+  record_id    String    @db.VarChar(36)
+  before_data  Json?
+  after_data   Json?
+  ip_address   String? @db.VarChar(50)
+  device_info  String? @db.VarChar(255)
+  reason       String? @db.VarChar(255)
+  created_at   DateTime  @default(now())
 
-  user        User? @relation(fields: [user_id], references: [id_user])
+  user         User? @relation(fields: [user_id], references: [id_user])
 
-  companies   Company[] @relation("CompanyLogs")
-  employees   Employee[] @relation("EmployeeLogs")
+  companies    Company[] @relation("CompanyLogs")
+  employees    Employee[] @relation("EmployeeLogs")
 }
 
 enum LogAction {
   CREATE
   UPDATE
   DELETE
+  DEACTIVATE
 }
