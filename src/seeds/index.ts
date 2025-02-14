@@ -9,70 +9,93 @@ export async function seedDatabase() {
   try {
     // Crear Países
     const country = await prisma.country.create({
-      data: {
-        name: 'Guatemala',
-      },
+      data: { name: 'Guatemala' },
     });
 
     // Crear Departamentos
     const department = await prisma.department.create({
-      data: {
-        name: 'IZABAL',
-        country_id: country.id_country,
-      },
+      data: { name: 'Izabal', country_id: country.id_country },
     });
 
     // Crear Municipios
     const municipality = await prisma.municipality.create({
-      data: {
-        name: 'Livingston',
-        department_id: department.id_department,
-      },
+      data: { name: 'Livingston', department_id: department.id_department },
+    });
+
+    // Crear Tipos de Empresas
+    const companyType = await prisma.companyType.create({
+      data: { name: 'Tecnología' },
     });
 
     // Crear Empresas
     const company = await prisma.company.create({
       data: {
-        name: 'PDC Solutions',
+        legal_name: 'PDC Solutions',
         trade_name: 'TechCorp',
         nit: '123456789',
-        phone: '555-1234',
-        email: 'info@techcorp.com',
         country_id: country.id_country,
         department_id: department.id_department,
         municipality_id: municipality.id_municipality,
+        company_type_id: companyType.id_company_type,
       },
     });
 
     // Crear Usuarios con contraseña hasheada
     const hashedPassword = await bcrypt.hash('password123', 10);
-    const user = await prisma.user.create({
-      data: {
-        email: 'admin@example.com',
-        name: 'Admin User',
-        password: hashedPassword,
-        role: 'ADMIN',
-      },
+    const users = await prisma.user.createMany({
+      data: [
+        {
+          email: 'superadmin@example.com',
+          name: 'Super Admin',
+          password: hashedPassword,
+          role: 'SUPER_ADMIN',
+        },
+        {
+          email: 'admin@example.com',
+          name: 'Admin User',
+          password: hashedPassword,
+          role: 'ADMIN',
+        },
+        {
+          email: 'hr@example.com',
+          name: 'HR User',
+          password: hashedPassword,
+          role: 'HR',
+        },
+      ],
+    });
+
+    console.info('🔑 Usuarios creados:', users);
+
+    // Obtener el usuario SUPER_ADMIN
+    const superAdmin = await prisma.user.findUnique({
+      where: { email: 'superadmin@example.com' },
     });
 
     // Crear Empleados
-    // const employee = await prisma.employee.create({
-    //   data: {
-    //     name: 'John Doe',
-    //     age: 30,
-    //     phone: '555-5678',
-    //     email: 'johndoe@example.com',
-    //     company_id: company.id_company,
-    //   },
-    // });
+    const employee = await prisma.employee.create({
+      data: {
+        name: 'John Doe',
+        age: 30,
+        email: 'johndoe@example.com',
+      },
+    });
 
-    // Crear Sesión
+    // Relación Empresa - Empleado (muchos a muchos)
+    await prisma.employeeCompany.create({
+      data: {
+        employee_id: employee.id_employee,
+        company_id: company.id_company,
+      },
+    });
+
+    // Crear Sesión de usuario
     await prisma.session.create({
       data: {
-        user_id: user.id_user,
+        user_id: superAdmin!.id_user,
         token: 'random_token',
         refresh_token: 'random_refresh_token',
-        expires_at: new Date(new Date().setDate(new Date().getDate() + 7)), // 7 días de expiración
+        expires_at: new Date(Date.now() + 60 * 60 * 24 * 7 * 1000), // Expira en 7 días
       },
     });
 
@@ -80,13 +103,13 @@ export async function seedDatabase() {
     await prisma.log.createMany({
       data: [
         {
-          user_id: user.id_user,
+          user_id: superAdmin!.id_user,
           table_name: 'User',
           action: 'CREATE',
-          record_id: user.id_user,
+          record_id: superAdmin!.id_user,
         },
         {
-          user_id: user.id_user,
+          user_id: superAdmin!.id_user,
           table_name: 'Company',
           action: 'CREATE',
           record_id: company.id_company,

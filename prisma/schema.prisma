@@ -1,8 +1,5 @@
-// This is your Prisma schema file,
+// This is your Prisma schema file
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
   provider = "prisma-client-js"
@@ -28,27 +25,24 @@ model User {
   updated_by      String? @db.VarChar(36)
 
   sessions        Session[]
-  logs            Log[]
+  logs            Log[] @relation("UserLogs")
 }
 
 enum UserRole {
+  SUPER_ADMIN
   ADMIN
   HR
-  EMPLOYEE
 }
 
-// Tabla para gestión de empresas
+// Tabla de empresas
 model Company {
   id_company      String @id @default(uuid())
-  name            String @db.VarChar(255)
-  trade_name      String @db.VarChar(255)
+  legal_name      String @db.VarChar(255) // Razón social
+  trade_name      String @db.VarChar(255) // Nombre comercial
   nit             String @unique @db.VarChar(50)
   phone           String? @db.VarChar(20)
   email           String? @db.VarChar(255)
-  website         String? @db.VarChar(255)
-  industry        String? @db.VarChar(100)
-  size            Int?
-  founded_year    Int?
+  address         String? @db.VarChar(255)
   company_type_id String? @db.VarChar(36)
   country_id      String @db.VarChar(36)
   department_id   String @db.VarChar(36)
@@ -64,9 +58,9 @@ model Company {
   department      Department   @relation(fields: [department_id], references: [id_department])
   municipality    Municipality @relation(fields: [municipality_id], references: [id_municipality])
   company_type    CompanyType? @relation(fields: [company_type_id], references: [id_company_type])
-  employees       Employee[]
-
+  employees       EmployeeCompany[]
   logs            Log[] @relation("CompanyLogs")
+
 }
 
 // Tipos de empresas
@@ -84,10 +78,10 @@ model Employee {
   phone          String? @db.VarChar(20)
   email          String? @db.VarChar(255)
   address        String? @db.VarChar(255)
+  salary         Float?
   start_date     DateTime?
   end_date       DateTime?
   position       String? @db.VarChar(100)
-  company_id     String? @db.VarChar(36)
 
   is_active      Boolean @default(true)
   created_at     DateTime @default(now())
@@ -95,9 +89,22 @@ model Employee {
   created_by     String? @db.VarChar(36)
   updated_by     String? @db.VarChar(36)
 
-  company        Company? @relation(fields: [company_id], references: [id_company])
-
+  companies      EmployeeCompany[] // Relación muchos a muchos
   logs           Log[] @relation("EmployeeLogs")
+}
+
+// Relación muchos a muchos entre Employee y Company
+model EmployeeCompany {
+  id_employee_company String @id @default(uuid())
+  employee_id         String @db.VarChar(36)
+  company_id          String @db.VarChar(36)
+  start_date          DateTime @default(now())
+  end_date            DateTime?
+
+  employee            Employee @relation(fields: [employee_id], references: [id_employee])
+  company             Company  @relation(fields: [company_id], references: [id_company])
+
+  @@unique([employee_id, company_id]) // Evitar duplicaciones
 }
 
 // Geografía
@@ -182,11 +189,11 @@ model Log {
   reason       String? @db.VarChar(255)
   created_at   DateTime  @default(now())
 
-  user         User? @relation(fields: [user_id], references: [id_user])
-
+  user         User[] @relation("UserLogs")
   companies    Company[] @relation("CompanyLogs")
   employees    Employee[] @relation("EmployeeLogs")
 }
+
 
 enum LogAction {
   CREATE

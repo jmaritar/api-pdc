@@ -9,7 +9,7 @@ import { getUserData } from '@/data/user/get-user';
 import { userSchema } from '@/data/user/schema';
 import { type AppRouteHandler } from '@/types/hono';
 
-export const loginSchema = {
+export const loginAdminSchema = {
   body: userSchema.pick({
     email: true,
     password: true,
@@ -20,19 +20,19 @@ export const loginSchema = {
   }),
 };
 
-export const loginRoute = createRoute({
+export const loginAdminRoute = createRoute({
   middleware: [],
   security: [{ bearerAuth: [] }],
   method: 'post',
-  path: '/auth/login',
+  path: '/auth/login-admin',
   tags: ['Auth'],
-  summary: 'Login',
-  description: 'Login user and return token',
+  summary: 'Login Admin',
+  description: 'Login admin users and return token',
   request: {
     body: {
       content: {
         'application/json': {
-          schema: loginSchema.body,
+          schema: loginAdminSchema.body,
         },
       },
     },
@@ -41,21 +41,18 @@ export const loginRoute = createRoute({
     201: {
       content: {
         'application/json': {
-          schema: loginSchema.response,
+          schema: loginAdminSchema.response,
         },
       },
-      description: 'User logged in successfully',
+      description: 'Admin logged in successfully',
     },
     401: {
-      description: 'Invalid email or password',
+      description: 'Invalid email, password, or unauthorized role',
     },
   },
 });
 
-// JWT_EXPIRE="15m"
-// JWT_REFRESH_EXPIRE="7d"
-
-export const loginRouteHandler: AppRouteHandler<typeof loginRoute> = async c => {
+export const loginAdminRouteHandler: AppRouteHandler<typeof loginAdminRoute> = async c => {
   const { email, password } = c.req.valid('json');
 
   try {
@@ -70,7 +67,7 @@ export const loginRouteHandler: AppRouteHandler<typeof loginRoute> = async c => 
       return c.json({ error: 'Invalid email or password' }, { status: 401 });
     }
 
-    if (user.role !== 'SUPER_ADMIN' && user.role !== 'HR') {
+    if (user.role !== 'SUPER_ADMIN' && user.role !== 'ADMIN') {
       return c.json({ error: 'Unauthorized - Invalid Role' }, { status: 403 });
     }
 
